@@ -32,14 +32,21 @@ int readFile(const char *fileName, struct FileContents *outContents)
 
 int main(int argc, char *argv[])
 {
-    // TODO: Validate args
+    if (argc != 3)
+    {
+        printf("Usage: <file1> <file2>\n");
+        return EXIT_FAILURE;
+
+    }
 
     struct FileContents left = {0};
     struct FileContents right = {0};
 
-    // TODO: Error-check
-    readFile(argv[1], &left);
-    readFile(argv[2], &right);
+    if (readFile(argv[1], &left) || readFile(argv[2], &right) != 0)
+    {
+        exit(EXIT_FAILURE);
+    }
+    
 
     printf("%s%s", left.lines[0], left.lines[1]);
 
