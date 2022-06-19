@@ -14,6 +14,22 @@ struct Differences
     size_t *indices;
 };
 
+char *readLine(FILE *file)
+{
+    size_t len = 1;
+    char *line = malloc(len);
+
+    for (char c = fgetc(file); (c != EOF) && (c != '\n'); c = fgetc(file))
+    {
+        len++;
+        line = realloc(line, len);
+        line[len - 2] = c; // TODO: Think about how to describe the magical '-2'
+    }
+
+    line[len - 1] = '\0';
+    return line;
+}
+
 int readFile(const char *fileName, struct FileContents *outContents)
 {
     FILE *file = fopen(fileName, "r");
@@ -30,8 +46,7 @@ int readFile(const char *fileName, struct FileContents *outContents)
         outContents->lines = realloc(outContents->lines, 
                                      outContents->nrOfLines * sizeof(char *));
 
-        size_t dummySize = 0;
-        getline(&outContents->lines[outContents->nrOfLines - 1], &dummySize, file);
+        outContents->lines[outContents->nrOfLines - 1] = readLine(file);
     }
 
     return EXIT_SUCCESS;
@@ -77,7 +92,9 @@ void displayDifferences(const struct Differences *differences,
     for (size_t i = 0; i < differences->len; i++)
     {
         const size_t line = differences->indices[i];
-        printf("Left: %s\nRight: %s\n", left->lines[line], right->lines[line]);
+        printf("Left:  %s\n" 
+               "Right: %s\n", 
+               left->lines[line], right->lines[line]);
     }
 }
 
