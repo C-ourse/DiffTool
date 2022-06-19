@@ -8,6 +8,12 @@ struct FileContents
     char **lines;
 };
 
+struct Differences
+{
+    size_t len;
+    size_t *indices;
+};
+
 int readFile(const char *fileName, struct FileContents *outContents)
 {
     FILE *file = fopen(fileName, "r");
@@ -31,31 +37,48 @@ int readFile(const char *fileName, struct FileContents *outContents)
     return EXIT_SUCCESS;
 }
 
-
-int compare(struct FileContents *left, struct FileContents *right)
+void addDifference(struct Differences * this, size_t index)
 {
-    int differences = 0;
+    this->len++;
+    this->indices = realloc(this->indices, sizeof(size_t) * this->len);
+    this->indices[this->len - 1] = index;
+}
+
+struct Differences compare(struct FileContents *left, struct FileContents *right)
+{
+    struct Differences differences = {0};
     size_t smaller = left->nrOfLines;
 
     if (left->nrOfLines > right->nrOfLines)
     {
         smaller = right->nrOfLines;
-        differences += left->nrOfLines - right->nrOfLines;
+        // TODO handle files of different lengths
     }
     else
     {
-        differences += right->nrOfLines - left->nrOfLines;
+        // TODO handle files of different lengths
     }
     
     for (size_t i = 0; i < smaller; i++)
     {
         if (strcmp(left->lines[i], right->lines[i]) != 0)
         {
-            differences++;
+            addDifference(&differences, i);
         }
     }
 
     return differences;
+}
+
+void displayDifferences(const struct Differences *differences,
+                        const struct FileContents *left, 
+                        const struct FileContents *right)
+{
+    for (size_t i = 0; i < differences->len; i++)
+    {
+        const size_t line = differences->indices[i];
+        printf("Left: %s\nRight: %s\n", left->lines[line], right->lines[line]);
+    }
 }
 
 int main(int argc, char *argv[])
@@ -75,10 +98,9 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
     
-    int differences = compare(&left, &right);
+    struct Differences differences = compare(&left, &right);
     
-    // displayDifferences(differences);
-    printf("Diff lines: %d\n", differences);
+    displayDifferences(&differences, &left, &right);
 
     return 0;
 }
