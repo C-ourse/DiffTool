@@ -48,7 +48,8 @@ int readFile(const char *fileName, struct FileContents *outContents)
 
         outContents->lines[outContents->nrOfLines - 1] = readLine(file);
     }
-
+    
+    fclose(file);
     return EXIT_SUCCESS;
 }
 
@@ -62,19 +63,14 @@ void addDifference(struct Differences * this, size_t index)
 struct Differences compare(struct FileContents *left, struct FileContents *right)
 {
     struct Differences differences = {0};
-    size_t smaller = left->nrOfLines;
+    size_t shorter = left->nrOfLines;
 
     if (left->nrOfLines > right->nrOfLines)
     {
-        smaller = right->nrOfLines;
-        // TODO handle files of different lengths
-    }
-    else
-    {
-        // TODO handle files of different lengths
+        shorter = right->nrOfLines;
     }
     
-    for (size_t i = 0; i < smaller; i++)
+    for (size_t i = 0; i < shorter; i++)
     {
         if (strcmp(left->lines[i], right->lines[i]) != 0)
         {
@@ -88,13 +84,30 @@ struct Differences compare(struct FileContents *left, struct FileContents *right
 void displayDifferences(const struct Differences *differences,
                         const struct FileContents *left, 
                         const struct FileContents *right)
-{
+{   
+
     for (size_t i = 0; i < differences->len; i++)
     {
         const size_t line = differences->indices[i];
-        printf("Left:  %s\n" 
-               "Right: %s\n", 
-               left->lines[line], right->lines[line]);
+        printf("%zu Left:  %s\n" 
+               "%zu Right: %s\n", 
+               line + 1, left->lines[line], line + 1, right->lines[line]);
+    }
+
+    const struct FileContents* shorter = left;
+    const struct FileContents* longer = right;
+    const char *longerSignature = "Right: ";
+    
+    if (left->nrOfLines > right->nrOfLines)
+    {
+        shorter = right;
+        longer = left;
+        longerSignature = "Left:  ";
+    }
+    
+    for (size_t i = shorter->nrOfLines; i < longer->nrOfLines; i++)
+    {
+        printf("%zu %s%s\n", i + 1, longerSignature, longer->lines[i]);
     }
 }
 
@@ -104,7 +117,6 @@ int main(int argc, char *argv[])
     {
         printf("Usage: <file1> <file2>\n");
         return EXIT_FAILURE;
-
     }
 
     struct FileContents left = {0};
