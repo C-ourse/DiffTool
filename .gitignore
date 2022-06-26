@@ -1,8 +1,10 @@
 .vscode
+.cache
 
-bld/*.d
-bld/*.o
-bld/difftool
+build/*.d
+build/*.o
+build/difftool
+build/compile_commands.json
 
 *.exe
 *.out
