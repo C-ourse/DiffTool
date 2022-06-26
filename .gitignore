@@ -1,7 +1,8 @@
 .vscode
 
-**/build/*
-**/bld/*
+bld/*.d
+bld/*.o
+bld/difftool
+
 *.exe
 *.out
-main
